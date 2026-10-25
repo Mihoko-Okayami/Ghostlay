@@ -1,0 +1,174 @@
+#ifdef __WIDL__
+#pragma winrt ns_prefix
+#endif
+import "inspectable.idl";
+import "asyncinfo.idl";
+import "eventtoken.idl";
+import "windowscontracts.idl";
+import "windows.foundation.idl";
+import "windows.storage.streams.idl";
+import "windows.media.idl";
+namespace Windows.Media.Control
+{
+    typedef enum GlobalSystemMediaTransportControlsSessionPlaybackStatus GlobalSystemMediaTransportControlsSessionPlaybackStatus;
+    interface ICurrentSessionChangedEventArgs;
+    interface IGlobalSystemMediaTransportControlsSession;
+    interface IGlobalSystemMediaTransportControlsSessionManager;
+    interface IGlobalSystemMediaTransportControlsSessionManagerStatics;
+    interface IGlobalSystemMediaTransportControlsSessionMediaProperties;
+    interface IGlobalSystemMediaTransportControlsSessionPlaybackInfo;
+    interface IGlobalSystemMediaTransportControlsSessionTimelineProperties;
+    interface IMediaPropertiesChangedEventArgs;
+    interface IPlaybackInfoChangedEventArgs;
+    interface ISessionsChangedEventArgs;
+    interface ITimelinePropertiesChangedEventArgs;
+    runtimeclass CurrentSessionChangedEventArgs;
+    runtimeclass GlobalSystemMediaTransportControlsSession;
+    runtimeclass GlobalSystemMediaTransportControlsSessionManager;
+    runtimeclass GlobalSystemMediaTransportControlsSessionMediaProperties;
+    runtimeclass GlobalSystemMediaTransportControlsSessionPlaybackInfo;
+    runtimeclass GlobalSystemMediaTransportControlsSessionTimelineProperties;
+    runtimeclass MediaPropertiesChangedEventArgs;
+    runtimeclass PlaybackInfoChangedEventArgs;
+    runtimeclass SessionsChangedEventArgs;
+    runtimeclass TimelinePropertiesChangedEventArgs;
+    declare
+    {
+        interface Windows.Foundation.IAsyncOperation<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager *>;
+        interface Windows.Foundation.AsyncOperationCompletedHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager *>;
+        interface Windows.Foundation.IAsyncOperation<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties *>;
+        interface Windows.Foundation.AsyncOperationCompletedHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties *>;
+        interface Windows.Foundation.Collections.IVectorView<Windows.Media.Control.GlobalSystemMediaTransportControlsSession *>;
+        interface Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager *, Windows.Media.Control.CurrentSessionChangedEventArgs *>;
+        interface Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager *, Windows.Media.Control.SessionsChangedEventArgs *>;
+        interface Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSession *, Windows.Media.Control.TimelinePropertiesChangedEventArgs *>;
+        interface Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSession *, Windows.Media.Control.PlaybackInfoChangedEventArgs *>;
+        interface Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSession *, Windows.Media.Control.MediaPropertiesChangedEventArgs *>;
+        interface Windows.Foundation.IReference<Windows.Media.MediaPlaybackType>;
+    }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0)]
+    enum GlobalSystemMediaTransportControlsSessionPlaybackStatus
+    {
+        Closed   = 0,
+        Opened   = 1,
+        Changing = 2,
+        Stopped  = 3,
+        Playing  = 4,
+        Paused   = 5
+    };
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.CurrentSessionChangedEventArgs), uuid(6969cb39-0bfa-5fe0-8d73-09cc5e5408e1)]
+    interface ICurrentSessionChangedEventArgs : IInspectable { }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.SessionsChangedEventArgs), uuid(bbf0cd32-42c4-5a58-b317-f34bbfbd26e0)]
+    interface ISessionsChangedEventArgs : IInspectable { }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.MediaPropertiesChangedEventArgs), uuid(7d3741cb-adf0-5cef-91ba-cfabcdd77678)]
+    interface IMediaPropertiesChangedEventArgs : IInspectable { }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.PlaybackInfoChangedEventArgs), uuid(786756c2-bc0d-50a5-8807-054291fef139)]
+    interface IPlaybackInfoChangedEventArgs : IInspectable { }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.TimelinePropertiesChangedEventArgs), uuid(29033a2f-c923-5a77-bcaf-055ff415ad32)]
+    interface ITimelinePropertiesChangedEventArgs : IInspectable { }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager), uuid(2050c4ee-11a0-57de-aed7-c97c70338245)]
+    interface IGlobalSystemMediaTransportControlsSessionManagerStatics : IInspectable
+    {
+        HRESULT RequestAsync([out, retval] Windows.Foundation.IAsyncOperation<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager *> **operation);
+    }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager), uuid(cace8eac-e86e-504a-ab31-5ff8ff1bce49)]
+    interface IGlobalSystemMediaTransportControlsSessionManager : IInspectable
+    {
+        HRESULT GetCurrentSession([out, retval] Windows.Media.Control.GlobalSystemMediaTransportControlsSession **result);
+        HRESULT GetSessions([out, retval] Windows.Foundation.Collections.IVectorView<Windows.Media.Control.GlobalSystemMediaTransportControlsSession *> **result);
+        [eventadd] HRESULT CurrentSessionChanged(
+            [in] Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager *, Windows.Media.Control.CurrentSessionChangedEventArgs *> *handler,
+            [out, retval] EventRegistrationToken *token);
+        [eventremove] HRESULT CurrentSessionChanged([in] EventRegistrationToken token);
+        [eventadd] HRESULT SessionsChanged(
+            [in] Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager *, Windows.Media.Control.SessionsChangedEventArgs *> *handler,
+            [out, retval] EventRegistrationToken *token);
+        [eventremove] HRESULT SessionsChanged([in] EventRegistrationToken token);
+    }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.GlobalSystemMediaTransportControlsSession), uuid(7148c835-9b14-5ae2-ab85-dc9b1c14e1a8)]
+    interface IGlobalSystemMediaTransportControlsSession : IInspectable
+    {
+        [propget] HRESULT SourceAppUserModelId([out, retval] HSTRING *value);
+        HRESULT TryGetMediaPropertiesAsync([out, retval] Windows.Foundation.IAsyncOperation<Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties *> **operation);
+        HRESULT GetTimelineProperties([out, retval] Windows.Media.Control.GlobalSystemMediaTransportControlsSessionTimelineProperties **result);
+        HRESULT GetPlaybackInfo([out, retval] Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackInfo **result);
+        HRESULT TryPlayAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryPauseAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryStopAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryRecordAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryFastForwardAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryRewindAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TrySkipNextAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TrySkipPreviousAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryChangeChannelUpAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryChangeChannelDownAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryTogglePlayPauseAsync([out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryChangeAutoRepeatModeAsync([in] Windows.Media.MediaPlaybackAutoRepeatMode mode, [out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryChangePlaybackRateAsync([in] DOUBLE rate, [out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryChangeShuffleActiveAsync([in] boolean active, [out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        HRESULT TryChangePlaybackPositionAsync([in] INT64 position, [out, retval] Windows.Foundation.IAsyncOperation<boolean> **operation);
+        [eventadd] HRESULT TimelinePropertiesChanged(
+            [in] Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSession *, Windows.Media.Control.TimelinePropertiesChangedEventArgs *> *handler,
+            [out, retval] EventRegistrationToken *token);
+        [eventremove] HRESULT TimelinePropertiesChanged([in] EventRegistrationToken token);
+        [eventadd] HRESULT PlaybackInfoChanged(
+            [in] Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSession *, Windows.Media.Control.PlaybackInfoChangedEventArgs *> *handler,
+            [out, retval] EventRegistrationToken *token);
+        [eventremove] HRESULT PlaybackInfoChanged([in] EventRegistrationToken token);
+        [eventadd] HRESULT MediaPropertiesChanged(
+            [in] Windows.Foundation.TypedEventHandler<Windows.Media.Control.GlobalSystemMediaTransportControlsSession *, Windows.Media.Control.MediaPropertiesChangedEventArgs *> *handler,
+            [out, retval] EventRegistrationToken *token);
+        [eventremove] HRESULT MediaPropertiesChanged([in] EventRegistrationToken token);
+    }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties), uuid(68856cf6-adb4-54b2-ac16-05837907acb6)]
+    interface IGlobalSystemMediaTransportControlsSessionMediaProperties : IInspectable
+    {
+        [propget] HRESULT Title([out, retval] HSTRING *value);
+        [propget] HRESULT Subtitle([out, retval] HSTRING *value);
+        [propget] HRESULT AlbumArtist([out, retval] HSTRING *value);
+        [propget] HRESULT Artist([out, retval] HSTRING *value);
+        [propget] HRESULT AlbumTitle([out, retval] HSTRING *value);
+        [propget] HRESULT TrackNumber([out, retval] INT32 *value);
+        [propget] HRESULT Genres([out, retval] Windows.Foundation.Collections.IVectorView<HSTRING> **value);
+        [propget] HRESULT AlbumTrackCount([out, retval] INT32 *value);
+        [propget] HRESULT PlaybackType([out, retval] Windows.Foundation.IReference<Windows.Media.MediaPlaybackType> **value);
+        [propget] HRESULT Thumbnail([out, retval] Windows.Storage.Streams.IRandomAccessStreamReference **value);
+    }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackInfo), uuid(94b4b6cf-e8ba-51ad-87a7-c10ade106127)]
+    interface IGlobalSystemMediaTransportControlsSessionPlaybackInfo : IInspectable
+    {
+        [propget] HRESULT Controls([out, retval] IInspectable **value);
+        [propget] HRESULT PlaybackStatus([out, retval] Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackStatus *value);
+    }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), exclusiveto(Windows.Media.Control.GlobalSystemMediaTransportControlsSessionTimelineProperties), uuid(ede34136-6f25-588d-8ecf-ea5b6735aaa5)]
+    interface IGlobalSystemMediaTransportControlsSessionTimelineProperties : IInspectable
+    {
+        [propget] HRESULT StartTime([out, retval] Windows.Foundation.TimeSpan *value);
+        [propget] HRESULT EndTime([out, retval] Windows.Foundation.TimeSpan *value);
+        [propget] HRESULT MinSeekTime([out, retval] Windows.Foundation.TimeSpan *value);
+        [propget] HRESULT MaxSeekTime([out, retval] Windows.Foundation.TimeSpan *value);
+        [propget] HRESULT Position([out, retval] Windows.Foundation.TimeSpan *value);
+        [propget] HRESULT LastUpdatedTime([out, retval] Windows.Foundation.DateTime *value);
+    }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile)]
+    runtimeclass CurrentSessionChangedEventArgs { [default] interface Windows.Media.Control.ICurrentSessionChangedEventArgs; }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile)]
+    runtimeclass SessionsChangedEventArgs { [default] interface Windows.Media.Control.ISessionsChangedEventArgs; }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile)]
+    runtimeclass MediaPropertiesChangedEventArgs { [default] interface Windows.Media.Control.IMediaPropertiesChangedEventArgs; }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile)]
+    runtimeclass PlaybackInfoChangedEventArgs { [default] interface Windows.Media.Control.IPlaybackInfoChangedEventArgs; }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile)]
+    runtimeclass TimelinePropertiesChangedEventArgs { [default] interface Windows.Media.Control.ITimelinePropertiesChangedEventArgs; }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile),
+     static(Windows.Media.Control.IGlobalSystemMediaTransportControlsSessionManagerStatics, Windows.Foundation.UniversalApiContract, 7.0)]
+    runtimeclass GlobalSystemMediaTransportControlsSessionManager { [default] interface Windows.Media.Control.IGlobalSystemMediaTransportControlsSessionManager; }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile)]
+    runtimeclass GlobalSystemMediaTransportControlsSession { [default] interface Windows.Media.Control.IGlobalSystemMediaTransportControlsSession; }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile)]
+    runtimeclass GlobalSystemMediaTransportControlsSessionMediaProperties { [default] interface Windows.Media.Control.IGlobalSystemMediaTransportControlsSessionMediaProperties; }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile)]
+    runtimeclass GlobalSystemMediaTransportControlsSessionPlaybackInfo { [default] interface Windows.Media.Control.IGlobalSystemMediaTransportControlsSessionPlaybackInfo; }
+    [contract(Windows.Foundation.UniversalApiContract, 7.0), marshaling_behavior(agile)]
+    runtimeclass GlobalSystemMediaTransportControlsSessionTimelineProperties { [default] interface Windows.Media.Control.IGlobalSystemMediaTransportControlsSessionTimelineProperties; }
+}

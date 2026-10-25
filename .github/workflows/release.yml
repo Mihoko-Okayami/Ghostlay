@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    defaults:
+      run:
+        shell: bash
+    env:
+      TAG: ${{ github.event.release.tag_name }}
+      VERSION: ${{ github.event.release.name || github.event.release.tag_name }}
+    steps:
+      - name: Check the version
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9A-Za-z][0-9A-Za-z.+_-]{0,23}$ ]]; then
+            echo "::error::The release title must be a version such as 1.0.0 or v1.0.0"
+            exit 1
+          fi
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Get llvm-mingw and OpenVR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          read -r url digest < <(gh api repos/mstorsjo/llvm-mingw/releases/latest --jq '.assets[] | select(.name | endswith("-ucrt-x86_64.zip")) | "\(.browser_download_url) \(.digest)"')
+          curl -fsSLo llvm-mingw.zip "$url"
+          echo "${digest#sha256:} *llvm-mingw.zip" | sha256sum -c
+          7z x -o"$RUNNER_TEMP" llvm-mingw.zip > /dev/null
+          bin=$(echo "$(cygpath -u "$RUNNER_TEMP")"/llvm-mingw-*/bin)
+          cygpath -w "$bin" >> "$GITHUB_PATH"
+          tag=$(gh api repos/ValveSoftware/openvr/releases/latest --jq .tag_name)
+          mkdir deps
+          curl -fsSLo deps/openvr_capi.h "https://raw.githubusercontent.com/ValveSoftware/openvr/$tag/headers/openvr_capi.h"
+          "$bin/x86_64-w64-mingw32-widl" --winrt -h -o deps/windows.media.control.h src/windows.media.control.idl
+          echo "llvm-mingw ${url##*/}, OpenVR $tag"
+      - name: Build
+        run: clang -target x86_64-w64-mingw32 -std=c17 -Wall -Wextra -Werror -municode -DWIN32_LEAN_AND_MEAN -DCOBJMACROS -DNTDDI_VERSION=0x0A000006 -D_WIN32_WINNT=0x0A00 -isystem deps -DVERSION="\"$VERSION\"" -Os -s -ffunction-sections -fdata-sections -Wl,--gc-sections -mwindows -o ghostlay.exe src/*.c -ld3d11 -ldxgi -ld2d1 -ldwrite -lole32 -luuid -lruntimeobject -lshcore -lws2_32 -liphlpapi -lwinmm
+      - uses: actions/attest@v4
+        with:
+          subject-path: ghostlay.exe
+      - name: Checksums
+        run: sha256sum ghostlay.exe > SHA256SUMS
+      - name: Attach the files to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "$TAG" ghostlay.exe SHA256SUMS

@@ -1,0 +1,55 @@
+name: Sanitizers
+
+on:
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    name: selftest (asan-ubsan)
+    runs-on: windows-2025
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    env:
+      CFLAGS: -target x86_64-w64-mingw32 -std=c17 -Wall -Wextra -Werror -municode -DWIN32_LEAN_AND_MEAN -DCOBJMACROS -DNTDDI_VERSION=0x0A000006 -D_WIN32_WINNT=0x0A00 -isystem deps -DVERSION="ci"
+      LIBS: -ld3d11 -ldxgi -ld2d1 -ldwrite -lole32 -luuid -lruntimeobject -lshcore -lws2_32 -liphlpapi -lwinmm
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Get llvm-mingw and OpenVR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          read -r url digest < <(gh api repos/mstorsjo/llvm-mingw/releases/latest --jq '.assets[] | select(.name | endswith("-ucrt-x86_64.zip")) | "\(.browser_download_url) \(.digest)"')
+          curl -fsSLo llvm-mingw.zip "$url"
+          echo "${digest#sha256:} *llvm-mingw.zip" | sha256sum -c
+          7z x -o"$RUNNER_TEMP" llvm-mingw.zip > /dev/null
+          bin=$(echo "$(cygpath -u "$RUNNER_TEMP")"/llvm-mingw-*/bin)
+          cygpath -w "$bin" >> "$GITHUB_PATH"
+          tag=$(gh api repos/ValveSoftware/openvr/releases/latest --jq .tag_name)
+          mkdir deps
+          curl -fsSLo deps/openvr_capi.h "https://raw.githubusercontent.com/ValveSoftware/openvr/$tag/headers/openvr_capi.h"
+          "$bin/x86_64-w64-mingw32-widl" --winrt -h -o deps/windows.media.control.h src/windows.media.control.idl
+          echo "llvm-mingw ${url##*/}, OpenVR $tag"
+      - name: Build with warnings as errors
+        run: clang $CFLAGS -Os -s -ffunction-sections -fdata-sections -Wl,--gc-sections -mwindows -o ghostlay.exe src/*.c $LIBS
+      - name: Build with sanitizers
+        run: clang $CFLAGS -O1 -g -gcodeview -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -DGL_TESTS -mconsole -Isrc -Itest -o ghostlay-test.exe src/*.c test/*.c $LIBS
+      - run: ./ghostlay-test.exe --selftest
+      - run: ./ghostlay-test.exe --render renders
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Ghostlay
+          path: ghostlay.exe
+          retention-days: 7
+      - uses: actions/upload-artifact@v7
+        with:
+          name: renders
+          path: renders
+          retention-days: 7
