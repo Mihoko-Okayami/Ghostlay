@@ -2,9 +2,10 @@
 
 A light SteamVR overlay for Windows: a wrist watch, notifications and battery alerts, in a single 200 KB program.
 
-<p align="center">
-  <img src=".github/images/watch.png" width="49%" align="top" alt="The watch with the time, the batteries and the music playing">
-  <img src=".github/images/history.png" width="49%" align="top" alt="The watch with its notification history open">
+<p>
+  <img src=".github/images/history.png" width="48%" align="right" alt="The watch with its notification history open">
+  <img src=".github/images/watch.png" width="48%" alt="The watch with the time, the batteries and the music playing"><br>
+  <img src=".github/images/trackers.png" width="48%" alt="The watch with its tracker list open">
 </p>
 
 ## Watch
