@@ -47,7 +47,7 @@ jobs:
           "$bin/x86_64-w64-mingw32-widl" --winrt -h -o deps/windows.media.control.h src/windows.media.control.idl
           echo "llvm-mingw ${url##*/}, OpenVR $tag"
       - name: Build
-        run: clang -target x86_64-w64-mingw32 -std=c17 -Wall -Wextra -Werror -municode -DWIN32_LEAN_AND_MEAN -DCOBJMACROS -DNTDDI_VERSION=0x0A000006 -D_WIN32_WINNT=0x0A00 -isystem deps -DVERSION="\"$VERSION\"" -Os -s -ffunction-sections -fdata-sections -Wl,--gc-sections -mwindows -o ghostlay.exe src/*.c -ld3d11 -ldxgi -ld2d1 -ldwrite -lole32 -luuid -lruntimeobject -lshcore -lws2_32 -liphlpapi -lwinmm
+        run: clang -target x86_64-w64-mingw32 -std=c17 -Wall -Wextra -Werror -municode -DWIN32_LEAN_AND_MEAN -DCOBJMACROS -DNTDDI_VERSION=0x0A000006 -D_WIN32_WINNT=0x0A00 -isystem deps -DVERSION="\"$VERSION\"" -Os -s -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--dependent-load-flag=0x800 -mwindows -o ghostlay.exe src/*.c -ld3d11 -ldxgi -ld2d1 -ldwrite -lole32 -luuid -lruntimeobject -lshcore -lws2_32 -liphlpapi -lwinmm
       - uses: actions/attest@v4
         with:
           subject-path: ghostlay.exe

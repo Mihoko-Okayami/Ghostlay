@@ -38,7 +38,7 @@ jobs:
           "$bin/x86_64-w64-mingw32-widl" --winrt -h -o deps/windows.media.control.h src/windows.media.control.idl
           echo "llvm-mingw ${url##*/}, OpenVR $tag"
       - name: Build with warnings as errors
-        run: clang $CFLAGS -Os -s -ffunction-sections -fdata-sections -Wl,--gc-sections -mwindows -o ghostlay.exe src/*.c $LIBS
+        run: clang $CFLAGS -Os -s -ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--dependent-load-flag=0x800 -mwindows -o ghostlay.exe src/*.c $LIBS
       - name: Build with sanitizers
         run: clang $CFLAGS -O1 -g -gcodeview -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -DGL_TESTS -mconsole -Isrc -Itest -o ghostlay-test.exe src/*.c test/*.c $LIBS
       - run: ./ghostlay-test.exe --selftest
