@@ -21,6 +21,7 @@ struct cfg g_cfg;
 uint32_t g_cfg_gen = 1;
 static WCHAR ini[MAX_PATH];
 static double save_at;
+static bool save_failed;
 
 enum { T_BOOL, T_INT, T_FLOAT, T_COLOR, T_ENUM, T_TIERS, T_BITS };
 
@@ -348,7 +349,14 @@ void cfg_flush(void) {
 	if (save_at <= 0) return;
 	save_at = 0;
 	if (!cfg_write(ini, &g_cfg)) {
-		glog("config save failed");
+		if (!save_failed) {
+			glog("config save failed, will retry");
+		}
+		save_failed = true;
+		save_at = now_s() + 10;
+	} else if (save_failed) {
+		glog("config saved");
+		save_failed = false;
 	}
 }
 
