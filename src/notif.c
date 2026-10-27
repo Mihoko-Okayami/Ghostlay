@@ -595,6 +595,12 @@ bool notif_update(double dt) {
 		start = now - dur;
 	}
 	if (active && now - start >= dur + OUT_S) {
+		if (!ready) {
+			GetLocalTime(&st);
+			AcquireSRWLockExclusive(&lk);
+			record(&cur, &st, true);
+			ReleaseSRWLockExclusive(&lk);
+		}
 		active = false;
 	}
 	if (!active) {
@@ -946,6 +952,31 @@ static int dnd_test(void) {
 	return fail;
 }
 
+static int lost_test(void) {
+	static struct notif n;
+	static struct notif_hist h[2];
+	int fail = 0;
+	hist_clear();
+	qh = qn = 0;
+	active = false;
+	notif_config(true);
+	notif_dnd_set(false);
+	dc_card(&n, NO_UDP, NI_DEFAULT, L"x", L"y");
+	n.sfx = SFX_NONE;
+	fail += !notif_push(&n);
+	notif_update(0);
+	fail += !active || ready || notif_hist_read(0, NULL);
+	start = now_s() - dur - OUT_S - 1;
+	notif_update(0);
+	fail += active || notif_hist_read(2, h) != 1 || !h[0].missed || h[0].seen || wcscmp(h[0].body, L"y");
+	hist_clear();
+	qh = qn = 0;
+	if (fail) {
+		glog("notif: unshown card selftest failed (%d)", fail);
+	}
+	return fail;
+}
+
 int notif_selftest(void) {
 	static struct notif n;
 	int fail = 0, want[NOTIF_CAP] = { 3, NOTIF_CAP + 1, 0, 1, 2 }, i;
@@ -965,7 +996,7 @@ int notif_selftest(void) {
 	if (fail) {
 		glog("notif: battery priority queue selftest failed");
 	}
-	return fail + burst_test() + initial_test() + hist_test() + dnd_test();
+	return fail + burst_test() + initial_test() + hist_test() + dnd_test() + lost_test();
 }
 
 bool notif_render_card(const struct notif *n, float f, const WCHAR *path) {
