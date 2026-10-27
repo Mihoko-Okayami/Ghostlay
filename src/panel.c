@@ -961,7 +961,10 @@ static void draw(void) {
 	}
 	nhit = 0;
 	fade = 1;
-	if (!gx_begin(tex)) return;
+	if (!gx_begin(tex)) {
+		dirty = true;
+		return;
+	}
 	chrome();
 	switch (page) {
 	case PG_GENERAL:
@@ -985,6 +988,8 @@ static void draw(void) {
 	}
 	if (gx_end()) {
 		ovl_texture(&ovl, tex);
+	} else {
+		dirty = true;
 	}
 }
 
@@ -995,7 +1000,10 @@ static void draw_grab(void) {
 	gdirty = false;
 	glang = g_cfg.lang;
 	gacc = g_cfg.accent;
-	if (!gtex || !gx_begin(gtex)) return;
+	if (!gtex || !gx_begin(gtex)) {
+		gdirty = gtex != NULL;
+		return;
+	}
 	gx_transform(GS, 0, 0);
 	if (drag || ghover) {
 		s = tr(S_P_GRAB_HINT);
@@ -1021,6 +1029,8 @@ static void draw_grab(void) {
 	}
 	if (gx_end()) {
 		ovl_texture(&grab, gtex);
+	} else {
+		gdirty = true;
 	}
 }
 
@@ -1343,7 +1353,7 @@ static void mouse_up(void) {
 	if (!is_open) return;
 	draw();
 	a = hit_at(mx, my);
-	dirty = a != hover;
+	dirty |= a != hover;
 	hover = a;
 }
 

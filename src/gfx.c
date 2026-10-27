@@ -286,8 +286,9 @@ static bool dev_make(void) {
 		tex_make(t);
 	}
 	for (b = bmps; b; b = b->next) {
-		bmp_make(b);
+		ok = bmp_make(b) && ok;
 	}
+	if (!ok) return false;
 	glog("gfx: device on %s (adapter %d)", name, adapter_idx);
 	return true;
 }
