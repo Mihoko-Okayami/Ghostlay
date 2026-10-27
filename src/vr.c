@@ -253,14 +253,16 @@ static void manifest(const WCHAR *wp) {
 	write_file(wp, body, n);
 }
 
-static HANDLE find_server(void) {
+static HANDLE find_server(bool *seen) {
 	PROCESSENTRY32W e;
 	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0), h = NULL;
 	BOOL more;
+	*seen = snap == INVALID_HANDLE_VALUE;
 	if (snap == INVALID_HANDLE_VALUE) return NULL;
 	e.dwSize = sizeof(e);
-	for (more = Process32FirstW(snap, &e); more && !h; more = Process32NextW(snap, &e)) {
+	for (more = Process32FirstW(snap, &e); more && !*seen; more = Process32NextW(snap, &e)) {
 		if (!_wcsicmp(e.szExeFile, L"vrserver.exe")) {
+			*seen = true;
 			h = OpenProcess(SYNCHRONIZE, FALSE, e.th32ProcessID);
 		}
 	}
@@ -289,13 +291,20 @@ static void vr_devices(void) {
 }
 
 bool vr_connect(void) {
-	EVRInitError e = core_init(EVRApplicationType_VRApplication_Background);
+	EVRInitError e;
 	float hz;
+	bool seen;
+	HANDLE s;
+	s = find_server(&seen);
+	e = seen ? core_init(EVRApplicationType_VRApplication_Background) : EVRInitError_VRInitError_Init_NoServerForBackgroundApp;
 	if (e == EVRInitError_VRInitError_None) {
 		core_shutdown();
 		e = core_init(EVRApplicationType_VRApplication_Overlay);
 	}
 	if (e != EVRInitError_VRInitError_None) {
+		if (s) {
+			CloseHandle(s);
+		}
 		if (e != last_err) {
 			glog("VR init error %d", (int)e);
 		}
@@ -303,6 +312,7 @@ bool vr_connect(void) {
 		return false;
 	}
 	inited = true;
+	server = s;
 	last_err = EVRInitError_VRInitError_None;
 	g_sys = table(IVRSystem_Version);
 	g_ovr = table(IVROverlay_Version);
@@ -324,7 +334,6 @@ bool vr_connect(void) {
 	memset(g_pose, 0, sizeof(g_pose));
 	vr_devices();
 	autolaunch = -1;
-	server = find_server();
 	if (!server) {
 		glog("vrserver.exe not found: a SteamVR crash will not be detected");
 	}
