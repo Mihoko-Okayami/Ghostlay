@@ -1446,7 +1446,7 @@ bool panel_update(void) {
 	if (gdirty) {
 		draw_grab();
 	}
-	return true;
+	return false;
 }
 
 #ifdef GL_TESTS

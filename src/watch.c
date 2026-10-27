@@ -979,7 +979,7 @@ void watch_shutdown(void) {
 
 bool watch_update(double dt) {
 	double now;
-	bool right, face = false;
+	bool right, face = false, drew = false;
 	TrackedDeviceIndex_t dev;
 	const HmdMatrix34_t *pw, *ph;
 	HmdMatrix34_t rel, wm, xf;
@@ -1056,11 +1056,12 @@ bool watch_update(double dt) {
 		if (draw(w.tex, &v)) {
 			ovl_texture(&w.ov, w.tex);
 			w.dirty = false;
+			drew = true;
 		}
 	}
 	ovl_alpha(&w.ov, a * g_cfg.watch_opacity / 100);
 	ovl_show(&w.ov, true);
-	return true;
+	return a < 1 || drew;
 }
 
 #ifdef GL_TESTS
