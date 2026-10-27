@@ -37,7 +37,7 @@ Everything is set in VR, in English or French.
 
 ## Install
 
-Download `ghostlay.exe` from the [latest release](https://github.com/Mihoko-Okayami/Ghostlay/releases/latest), put it anywhere and run it. It waits for SteamVR if SteamVR is not running yet.
+Download `ghostlay.exe` from the [latest release](https://github.com/Mihoko-Okayami/Ghostlay/releases/latest), put it anywhere and run it. It waits for SteamVR if SteamVR is not running yet, and closes with it.
 
 Ghostlay is portable: its settings and logs are in `%APPDATA%\Ghostlay`, and nothing is registered in SteamVR unless you turn on **Launch with SteamVR** in the General settings.
 

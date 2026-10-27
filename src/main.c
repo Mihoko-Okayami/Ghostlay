@@ -437,7 +437,7 @@ static int selftest(void) {
 }
 #else
 static int selftest(void) {
-	glog("--selftest and --render are only in ghostlay-test.exe (build.bat test)");
+	glog("--selftest and --render are only in the test build (-DGL_TESTS)");
 	return 1;
 }
 
