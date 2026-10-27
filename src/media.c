@@ -130,7 +130,7 @@ static bool await(void *op, const IID *iid, const char *what) {
 }
 
 static void text(HSTRING h, WCHAR *out, int cap) {
-	UINT32 n = 0;
+	UINT32 n = 0, i;
 	const WCHAR *p = WindowsGetStringRawBuffer(h, &n);
 	if (!p) {
 		p = L"";
@@ -144,6 +144,11 @@ static void text(HSTRING h, WCHAR *out, int cap) {
 	}
 	memcpy(out, p, n * sizeof(*out));
 	out[n] = 0;
+	for (i = 0; i < n; i++) {
+		if (out[i] < 32 || (out[i] >= 0x7F && out[i] <= 0x9F) || out[i] == 0x2028 || out[i] == 0x2029) {
+			out[i] = L' ';
+		}
+	}
 	ok(WindowsDeleteString(h), "string");
 }
 
@@ -351,9 +356,10 @@ static void read_tl(bool fresh) {
 	t = now_s();
 	age = (double)((INT64)((uint64_t)ft.dwHighDateTime << 32 | ft.dwLowDateTime) - lu.UniversalTime) / 1e7;
 	at = lu.UniversalTime > 0 && age > 0 && age < 43200 ? t - age : t;
-	dur = (double)(b.Duration - a.Duration) / 1e7;
-	pos = (double)(p.Duration - a.Duration) / 1e7;
-	dur = dur > 0 ? dur : 0;
+	dur = ((double)b.Duration - (double)a.Duration) / 1e7;
+	pos = ((double)p.Duration - (double)a.Duration) / 1e7;
+	dur = dur > 0 && dur < 1e7 ? dur : 0;
+	pos = pos < 1e7 ? pos : 0;
 	if (!fresh && at < w.stamp - 2 && fabs(dur - w.dur) < 0.5) return;
 	was = media_pos(&w, t);
 	d0 = w.dur;
@@ -618,12 +624,21 @@ static void dump(void) {
 }
 
 int media_selftest(void) {
+	static const WCHAR raw[] = L"a\nb\tc\u2028d\x85" L"e";
 	static const WCHAR *const names[][2] = { { L"Spotify.exe", L"Spotify" }, { L"SpotifyAB.SpotifyMusic_zpdnekdrzrea0!Spotify", L"Spotify" }, { L"Chrome", L"Chrome" }, { L"{6D809377-6AF0-444B-8957-A3773F02200E}\\VideoLAN\\VLC\\vlc.exe", L"vlc" } };
 	WCHAR b[64];
 	int fail = 0, i, run;
 	uint32_t v0;
 	const struct media_snap *m;
 	bool idle;
+	HSTRING h;
+	if (SUCCEEDED(WindowsCreateString(raw, ARRAYSIZE(raw) - 1, &h))) {
+		text(h, b, ARRAYSIZE(b));
+		if (wcscmp(b, L"a b c d e")) {
+			glog("media: control characters kept in a title");
+			fail++;
+		}
+	}
 	for (i = 0; i < (int)ARRAYSIZE(names); i++) {
 		app_name(names[i][0], b, ARRAYSIZE(b));
 		if (wcscmp(b, names[i][1])) {
