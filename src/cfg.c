@@ -317,18 +317,16 @@ static bool cfg_write(const WCHAR *path, const struct cfg *c) {
 }
 
 void cfg_load(void) {
-	char u[MAX_PATH * 3];
 	swprintf(ini, MAX_PATH, L"%ls\\ghostlay.ini", g_app.data);
-	to_utf8(ini, u, sizeof(u));
 	cfg_defaults(&g_cfg);
 	if (cfg_read(ini, &g_cfg)) {
-		glog("config loaded from %s", u);
+		glog("config loaded");
 	} else {
 		first_launch(&g_cfg);
 		if (cfg_write(ini, &g_cfg)) {
-			glog("config created at %s", u);
+			glog("config created");
 		} else {
-			glog("config cannot be written to %s", u);
+			glog("config cannot be written");
 		}
 	}
 	g_cfg_gen++;

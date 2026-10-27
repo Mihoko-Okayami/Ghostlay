@@ -195,7 +195,7 @@ void write_file(const WCHAR *path, const char *s, int n) {
 	if (r == (DWORD)n && !memcmp(old, s, n)) return;
 	h = CreateFileW(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (h == INVALID_HANDLE_VALUE || !WriteFile(h, s, n, &r, NULL) || r != (DWORD)n) {
-		glog("cannot write %ls", path);
+		glog("cannot write %ls", wcsrchr(path, L'\\') ? wcsrchr(path, L'\\') + 1 : path);
 	}
 	if (h != INVALID_HANDLE_VALUE) {
 		CloseHandle(h);
