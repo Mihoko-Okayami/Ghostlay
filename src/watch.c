@@ -98,7 +98,6 @@ static struct {
 
 static const HmdMatrix34_t xso_left = { { { -0.083190f, 0.075290f, -0.993685f, -0.052032f }, { -0.776694f, -0.629640f, 0.017317f, 0.015226f }, { -0.624360f, 0.773230f, 0.110858f, 0.138261f } } };
 static const uint32_t lvl_fill[3] = { 0xD9DCE1, C_WARN, C_CRIT }, lvl_text[3] = { C_TEXT, C_WARN, C_INK };
-static const int role_str[BR_COUNT] = { [BR_NONE] = -1, [BR_CHEST] = S_W_CHEST, [BR_WAIST] = S_W_WAIST, [BR_LEFT_SHOULDER] = S_W_LEFT_SHOULDER, [BR_RIGHT_SHOULDER] = S_W_RIGHT_SHOULDER, [BR_LEFT_ELBOW] = S_W_LEFT_ELBOW, [BR_RIGHT_ELBOW] = S_W_RIGHT_ELBOW, [BR_LEFT_WRIST] = S_W_LEFT_WRIST, [BR_RIGHT_WRIST] = S_W_RIGHT_WRIST, [BR_HANDED] = S_W_HANDED, [BR_LEFT_KNEE] = S_W_LEFT_KNEE, [BR_RIGHT_KNEE] = S_W_RIGHT_KNEE, [BR_LEFT_ANKLE] = S_W_LEFT_ANKLE, [BR_RIGHT_ANKLE] = S_W_RIGHT_ANKLE, [BR_LEFT_FOOT] = S_W_LEFT_FOOT, [BR_RIGHT_FOOT] = S_W_RIGHT_FOOT, [BR_CAMERA] = S_W_CAMERA, [BR_KEYBOARD] = S_W_KEYBOARD };
 static const enum str_id btn_name[3] = { S_W_DND, S_W_HISTORY, S_CONFIGURATION };
 
 static int pct_of(float p) {
@@ -436,8 +435,8 @@ static void popup(const struct view *v) {
 	gx_clip_push(14, LOW_Y + 2, 612, h - 4);
 	for (i = first; i < n && i < first + 2 * (PROWS + 1); i++) {
 		d = &v->bat->trk[i];
-		if (role_str[d->role] > 0) {
-			label = tr(role_str[d->role]);
+		if (bat_role_str(d->role) > 0) {
+			label = tr(bat_role_str(d->role));
 		} else {
 			swprintf(nm, 48, tr(S_N_DEV_TRACKER), i + 1);
 			label = nm;
@@ -516,7 +515,7 @@ static void hist_row(const struct notif_hist *h, struct gx_bmp *b, float y, bool
 	gx_text(ft, title, 96, ty, 300, 28, col_rgb(C_TEXT), GT_ELLIPSIS | GT_LINES(1));
 	meta(fb, m, 604, 508 - tw - 12, ty);
 	if (bat) {
-		notif_bat_text(h->bat_dev, h->bat_pct, dev, pct);
+		notif_bat_text(h->bat_dev, h->bat_role, h->bat_pct, dev, pct);
 		d = gx_text(fb, dev, 96, y + 29, 508 - gx_measure(fs, pct, 0, GT_TNUM, NULL), 26, col_rgb(C_DEVICE), GT_TNUM | GT_ELLIPSIS);
 		gx_text(fs, pct, 96 + d, y + 29, 0, 26, col_rgb(crit ? C_CRIT_T : C_WARN_T), GT_TNUM);
 	} else if (h->body[0]) {

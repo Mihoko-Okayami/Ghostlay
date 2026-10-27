@@ -8,6 +8,7 @@
 #include "audio.h"
 #include "battery.h"
 #include "cfg.h"
+#include "lang.h"
 #include "main.h"
 #include "notif.h"
 #include "vr.h"
@@ -60,19 +61,25 @@ static int check(struct track *t, const struct bat_dev *b, double now, bool ok) 
 	return hit;
 }
 
-static void build(struct notif *n, int dev, int pct, bool critical) {
+int bat_role_str(int role) {
+	static const int s[BR_COUNT] = { [BR_NONE] = -1, [BR_CHEST] = S_W_CHEST, [BR_WAIST] = S_W_WAIST, [BR_LEFT_SHOULDER] = S_W_LEFT_SHOULDER, [BR_RIGHT_SHOULDER] = S_W_RIGHT_SHOULDER, [BR_LEFT_ELBOW] = S_W_LEFT_ELBOW, [BR_RIGHT_ELBOW] = S_W_RIGHT_ELBOW, [BR_LEFT_WRIST] = S_W_LEFT_WRIST, [BR_RIGHT_WRIST] = S_W_RIGHT_WRIST, [BR_HANDED] = S_W_HANDED, [BR_LEFT_KNEE] = S_W_LEFT_KNEE, [BR_RIGHT_KNEE] = S_W_RIGHT_KNEE, [BR_LEFT_ANKLE] = S_W_LEFT_ANKLE, [BR_RIGHT_ANKLE] = S_W_RIGHT_ANKLE, [BR_LEFT_FOOT] = S_W_LEFT_FOOT, [BR_RIGHT_FOOT] = S_W_RIGHT_FOOT, [BR_CAMERA] = S_W_CAMERA, [BR_KEYBOARD] = S_W_KEYBOARD };
+	return s[role];
+}
+
+static void build(struct notif *n, int dev, int role, int pct, bool critical) {
 	notif_blank(n, NO_UDP);
 	n->kind = critical ? NK_CRITICAL : NK_NORMAL;
 	n->icon = NI_BATTERY;
 	n->sfx = g_cfg.bat_sound ? SFX_ALERT : SFX_NONE;
 	n->timeout = 6;
 	n->bat_dev = dev;
+	n->bat_role = role;
 	n->bat_pct = pct;
 }
 
-static bool alert(int dev, int pct, bool critical) {
+static bool alert(int dev, int role, int pct, bool critical) {
 	static struct notif n;
-	build(&n, dev, pct, critical);
+	build(&n, dev, role, pct, critical);
 	glog("battery %s: device %d at %d%%", critical ? "critical" : "low", dev, pct);
 	return notif_push(&n);
 }
@@ -205,7 +212,7 @@ static void scan(const struct bat_snap *s, double now, bool ok, int *hit) {
 
 static void deliver(const struct bat_dev *b, int dev, int t) {
 	int v;
-	if (t < 0 || alert(dev, (int)lroundf(b->pct * 100), t == g_cfg.bat_ntiers - 1)) return;
+	if (t < 0 || alert(dev, b->role, (int)lroundf(b->pct * 100), t == g_cfg.bat_ntiers - 1)) return;
 	v = g_cfg.bat_tiers[t];
 	tk[b->idx].fired[v >> 6 & 1] &= ~(1ull << (v & 63));
 }
@@ -261,7 +268,7 @@ void battery_update(double now) {
 }
 
 void battery_test_alert(void) {
-	alert(BD_RIGHT, g_cfg.bat_tiers[g_cfg.bat_ntiers - 1], true);
+	alert(BD_RIGHT, BR_NONE, g_cfg.bat_tiers[g_cfg.bat_ntiers - 1], true);
 }
 
 void battery_shutdown(void) {
@@ -404,14 +411,14 @@ int battery_selftest(void) {
 		}
 	}
 	g_cfg.bat_sound = true;
-	build(&n, BD_TRACKER + MAX_TRACKERS - 1, 15, true);
-	if (n.kind != NK_CRITICAL || n.icon != NI_BATTERY || n.sfx != SFX_ALERT || n.bat_dev != BD_TRACKER + MAX_TRACKERS - 1 || n.bat_pct != 15 || n.source[0] || n.title[0] || n.body[0]) {
+	build(&n, BD_TRACKER + MAX_TRACKERS - 1, BR_LEFT_FOOT, 15, true);
+	if (n.kind != NK_CRITICAL || n.icon != NI_BATTERY || n.sfx != SFX_ALERT || n.bat_dev != BD_TRACKER + MAX_TRACKERS - 1 || n.bat_role != BR_LEFT_FOOT || n.bat_pct != 15 || n.source[0] || n.title[0] || n.body[0]) {
 		glog("battery: critical tracker notification is wrong");
 		fail++;
 	}
 	g_cfg.bat_sound = false;
-	build(&n, BD_LEFT, 30, false);
-	if (n.kind != NK_NORMAL || n.sfx != SFX_NONE || n.bat_pct != 30 || n.bat_dev != BD_LEFT) {
+	build(&n, BD_LEFT, BR_NONE, 30, false);
+	if (n.kind != NK_NORMAL || n.sfx != SFX_NONE || n.bat_pct != 30 || n.bat_dev != BD_LEFT || n.bat_role != BR_NONE) {
 		glog("battery: warning controller notification is wrong");
 		fail++;
 	}

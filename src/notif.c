@@ -131,7 +131,7 @@ static void record(const struct notif *n, const SYSTEMTIME *at, bool missed) {
 	hh = (hh + HIST_CAP - 1) % HIST_CAP;
 	hn += hn < HIST_CAP;
 	h = &hist[hh];
-	*h = (struct notif_hist){ .id = ++ids, .missed = missed, .kind = n->kind, .icon = n->icon, .origin = n->origin, .count = n->count, .bat_dev = n->bat_dev, .bat_pct = n->bat_pct };
+	*h = (struct notif_hist){ .id = ++ids, .missed = missed, .kind = n->kind, .icon = n->icon, .origin = n->origin, .count = n->count, .bat_dev = n->bat_dev, .bat_role = n->bat_role, .bat_pct = n->bat_pct };
 	put(h->title, ARRAYSIZE(h->title), n->title);
 	put(h->source, ARRAYSIZE(h->source), n->source);
 	fill(h, n, at);
@@ -354,8 +354,10 @@ void notif_config(bool v) {
 	glog("notifications %s", v ? "on" : "off");
 }
 
-void notif_bat_text(int dev, int pct, WCHAR *name, WCHAR *value) {
-	if (dev >= BD_TRACKER) {
+void notif_bat_text(int dev, int role, int pct, WCHAR *name, WCHAR *value) {
+	if (dev >= BD_TRACKER && bat_role_str(role) > 0) {
+		put(name, 128, tr(bat_role_str(role)));
+	} else if (dev >= BD_TRACKER) {
 		swprintf(name, 128, tr(S_N_DEV_TRACKER), dev - BD_TRACKER + 1);
 	} else {
 		put(name, 128, tr(dev == BD_HMD ? S_W_HEADSET : dev == BD_LEFT ? S_N_DEV_LEFT : S_N_DEV_RIGHT));
@@ -404,7 +406,7 @@ static void layout(const struct notif *n) {
 	float a, t, s, b;
 	int ft, fb;
 	if (n->icon == NI_BATTERY) {
-		notif_bat_text(n->bat_dev, n->bat_pct, dev, pct);
+		notif_bat_text(n->bat_dev, n->bat_role, n->bat_pct, dev, pct);
 		a = gx_measure(gx_font(GF_DISPLAY, 26, 600), tr(S_N_LOW_BATTERY), 0, 0, NULL);
 		b = gx_measure(gx_font(GF_TEXT, 22, 500), dev, 0, GT_TNUM, NULL) + gx_measure(gx_font(GF_TEXT, 22, 600), pct, 0, GT_TNUM, NULL);
 		cw = ceilf(fminf(fmaxf(fmaxf(a, b) + 52, 560), 800));
@@ -444,7 +446,7 @@ static void draw_alert(const struct notif *n, float x, float y, float f, bool cr
 	gx_stroke_circle(cx, cy, 32, 5, col_rgb(crit ? C_RING_CRIT : C_RING));
 	ring(cx, cy, 32, 5, f, col_rgb(crit ? C_CRIT : C_WARN));
 	notif_medallion(NI_BATTERY, crit ? NK_CRITICAL : NK_NORMAL, n->title, NULL, cx, cy, 25);
-	notif_bat_text(n->bat_dev, n->bat_pct, dev, pct);
+	notif_bat_text(n->bat_dev, n->bat_role, n->bat_pct, dev, pct);
 	gx_text(gx_font(GF_DISPLAY, 26, 600), tr(S_N_LOW_BATTERY), x + 26, y + 48, cw - 52, 32, col_rgb(C_TEXT), GT_CENTER | GT_ELLIPSIS);
 	f1 = gx_font(GF_TEXT, 22, 500);
 	f2 = gx_font(GF_TEXT, 22, 600);
@@ -979,6 +981,7 @@ static int lost_test(void) {
 
 int notif_selftest(void) {
 	static struct notif n;
+	WCHAR nm[128], val[16], trk[64];
 	int fail = 0, want[NOTIF_CAP] = { 3, NOTIF_CAP + 1, 0, 1, 2 }, i;
 	for (i = 5; i < NOTIF_CAP; i++) {
 		want[i] = i - 1;
@@ -996,6 +999,11 @@ int notif_selftest(void) {
 	if (fail) {
 		glog("notif: battery priority queue selftest failed");
 	}
+	notif_bat_text(BD_TRACKER + 1, BR_LEFT_FOOT, 14, nm, val);
+	fail += wcsncmp(nm, tr(S_W_LEFT_FOOT), wcslen(tr(S_W_LEFT_FOOT))) != 0;
+	swprintf(trk, ARRAYSIZE(trk), tr(S_N_DEV_TRACKER), 2);
+	notif_bat_text(BD_TRACKER + 1, BR_NONE, 14, nm, val);
+	fail += wcsncmp(nm, trk, wcslen(trk)) != 0;
 	return fail + burst_test() + initial_test() + hist_test() + dnd_test() + lost_test();
 }
 

@@ -21,7 +21,7 @@ struct gx_bmp;
 struct notif {
 	int kind, icon, sfx;
 	float timeout, volume, opacity;
-	int bat_dev, bat_pct, origin, count;
+	int bat_dev, bat_role, bat_pct, origin, count;
 	WCHAR title[128], body[512], source[64];
 	uint8_t img[ICON_PX * ICON_PX * 4];
 };
@@ -29,7 +29,7 @@ struct notif {
 struct notif_hist {
 	uint32_t id;
 	bool missed, seen;
-	int kind, icon, origin, count, bat_dev, bat_pct;
+	int kind, icon, origin, count, bat_dev, bat_role, bat_pct;
 	SYSTEMTIME at;
 	WCHAR title[128], body[160], source[64];
 	uint8_t img[HIST_PX * HIST_PX * 4];
@@ -43,7 +43,7 @@ bool notif_push(const struct notif *n);
 bool notif_has_room(void);
 void notif_test(void);
 bool notif_update(double dt);
-void notif_bat_text(int dev, int pct, WCHAR *name, WCHAR *value);
+void notif_bat_text(int dev, int role, int pct, WCHAR *name, WCHAR *value);
 void notif_medallion(int icon, int kind, const WCHAR *title, struct gx_bmp *b, float cx, float cy, float r);
 bool notif_dnd(void);
 void notif_dnd_set(bool on);

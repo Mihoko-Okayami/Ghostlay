@@ -34,6 +34,7 @@ int bat_level(float pct);
 void battery_init(void);
 void battery_update(double now);
 void battery_test_alert(void);
+int bat_role_str(int role);
 void battery_shutdown(void);
 
 #ifdef GL_TESTS
