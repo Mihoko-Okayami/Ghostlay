@@ -294,11 +294,14 @@ static bool port_owner(int port, WCHAR *name, int cap) {
 
 static void receive(struct ctx *c, SOCKET s) {
 	int r;
+	bool ok;
 	for (;;) {
 		r = recvfrom(s, c->buf, sizeof(c->buf), 0, NULL, NULL);
 		if (r < 0 && (WSAGetLastError() == WSAEMSGSIZE || WSAGetLastError() == WSAECONNRESET)) continue;
 		if (r < 0) return;
-		if (udp_parse(c->buf, r, &c->n)) {
+		ok = udp_parse(c->buf, r, &c->n);
+		if (WaitForSingleObject(c->stop, 0) != WAIT_TIMEOUT) return;
+		if (ok) {
 			notif_push(&c->n);
 		}
 	}

@@ -212,7 +212,7 @@ bool worker_stop(struct worker *w, DWORD ms, const char *name) {
 	bool done;
 	if (!w->th) return true;
 	SetEvent(w->stop);
-	done = WaitForSingleObject(w->th, ms) != WAIT_TIMEOUT;
+	done = WaitForSingleObject(w->th, ms) == WAIT_OBJECT_0;
 	if (!done) {
 		glog("%s worker stuck, abandoning", name);
 		w->stuck = true;

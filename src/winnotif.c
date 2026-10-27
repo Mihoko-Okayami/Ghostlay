@@ -371,9 +371,7 @@ static bool on_disk(const WCHAR *path) {
 
 static int avatar(struct ctx *c, const WCHAR *path) {
 	if (!on_disk(path)) return NI_INITIAL;
-	if (!img_local(path) && GetFileAttributesW(path) == INVALID_FILE_ATTRIBUTES) {
-		WaitForSingleObject(c->stop, AVATAR_RETRY_MS);
-	}
+	if (!img_local(path) && GetFileAttributesW(path) == INVALID_FILE_ATTRIBUTES && WaitForSingleObject(c->stop, AVATAR_RETRY_MS) != WAIT_TIMEOUT) return NI_INITIAL;
 	return img_local(path) && img_decode_file(path, c->n.img) ? NI_IMAGE : NI_INITIAL;
 }
 
@@ -478,7 +476,7 @@ static void handle(struct ctx *c, long long id, long long arrival) {
 	} else {
 		glog("discord: toast %lld, %d texts, image %s %s, title split %s, latency %.0f ms%s", id, c->t.ntext, src_names[kind], c->n.icon == NI_IMAGE ? "decoded" : "not used", split ? "yes" : "no", lat, lat > STALE_S * 1000 ? ", too old: skipped" : "");
 	}
-	if (ok && !diag && lat <= STALE_S * 1000) {
+	if (ok && !diag && lat <= STALE_S * 1000 && WaitForSingleObject(c->stop, 0) == WAIT_TIMEOUT) {
 		notif_push(&c->n);
 	}
 }
@@ -498,7 +496,7 @@ static int poll(struct ctx *c) {
 		c->last = mx;
 		return 0;
 	}
-	while (mx > c->last) {
+	while (mx > c->last && WaitForSingleObject(c->stop, 0) == WAIT_TIMEOUT) {
 		sq.f.bind_int64(c->st_rows, 1, c->last);
 		sq.f.bind_int64(c->st_rows, 2, diag);
 		rc = sq.f.step(c->st_rows);
