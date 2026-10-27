@@ -1062,7 +1062,7 @@ bool img_decode_mem(const void *data, size_t len, uint8_t *out) {
 	IWICStream *s = NULL;
 	IWICBitmapDecoder *d = NULL;
 	bool ok;
-	if (!data || !len || len > 0x7FFFFFFF) return false;
+	if (!data || len < 4 || len > 0x7FFFFFFF || (memcmp(data, "\x89PNG", 4) && memcmp(data, "\xFF\xD8\xFF", 3))) return false;
 	f = wic();
 	ok = f && SUCCEEDED(IWICImagingFactory_CreateStream(f, &s)) && SUCCEEDED(IWICStream_InitializeFromMemory(s, (BYTE *)data, (DWORD)len)) && SUCCEEDED(IWICImagingFactory_CreateDecoderFromStream(f, (IStream *)s, NULL, WICDecodeMetadataCacheOnDemand, &d)) && decode(f, d, out);
 	rel(&d);

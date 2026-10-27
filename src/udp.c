@@ -555,6 +555,7 @@ int udp_selftest(void) {
 	snprintf(big, sizeof(big), "{\"title\":\"%0126d\\ud83d\\ude00\"}", 0);
 	f += ck(parse(big, &n) && wcslen(n.title) == 126, "surrogate pair kept whole");
 	f += ck(parse("{\"title\":\"x\",\"icon\":\"data:image\\/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEUlEQVR4nGP4z8AAQv8ZYAwAQ84H+VjtZqAAAAAASUVORK5CYII=\",\"useBase64Icon\":true}", &n) && n.icon == NI_IMAGE && n.img[3] == 255, "base64 png icon");
+	f += ck(parse("{\"title\":\"x\",\"icon\":\"R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7\",\"useBase64Icon\":true}", &n) && n.icon == NI_DEFAULT, "gif icon refused, only png and jpeg");
 	f += ck(parse("{\"title\":\"x\",\"useBase64Icon\":true,\"icon\":\"!!!\"}", &n) && n.icon == NI_DEFAULT, "bad base64 icon");
 	f += ck(b64_decode("SGVsbG8=", 8, b, 16) == 5 && !memcmp(b, "Hello", 5) && b64_decode("SGVs\r\nbG8", 9, b, 16) == 5 && b64_decode("SGV*", 4, b, 16) == -1 && b64_decode("SGVsbG8=", 8, b, 3) == -1 && !b64_decode("", 0, b, 16), "base64");
 	return f + file_icon(&n) + loopback();
